@@ -1,0 +1,45 @@
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<style>
+		body {
+			font-family: "Helvetica";
+		}
+		#result {
+			margin-top:20px;
+		}
+	</style>
+</head>
+<body>
+	<h1>Kafka producer</h1>
+	<label>
+		Mensaje:
+		<input type="text" name="msg" id="msg" value="">
+	</label>
+	<button type="button" id="btSend">Enviar</button>
+	<div id="result"></div>
+
+	<script>
+		$(document).ready(function() {
+			$('#btSend').click(function(e) {
+				$.ajax({
+				  type: 'POST',
+				  url: '/produce',
+				  data: { msg: $('#msg').val() },
+				  dataType: 'json'
+				})
+				.done(function(data) {
+					var date = new Date(data.timestamp);
+					date = date.toISOString().slice(0, 10) + ' ' + date.toISOString().slice(-13, -5);
+					var result = `Fecha: ${date}<br>Nodo: ${data.node}<br>Mensaje: ${data.msg}`;
+					$('#result').html(result);
+					$('#msg').val('');
+				})
+				.fail(function(err) {
+					console.log('error', err);
+				});
+			});
+		});
+	</script>
+</body>
+</html>

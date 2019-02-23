@@ -1,0 +1,40 @@
+version: '3'
+services:
+  zookeeper:
+    image: debezium/zookeeper:0.9
+    ports:
+      - "2181:2181"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  kafka:
+    image: debezium/kafka:0.9
+    ports:
+      - "9092:9092"
+    environment:
+      ZOOKEEPER_CONNECT: zookeeper:2181,
+      CREATE_TOPICS: "global:1:1"
+    depends_on:
+      - "zookeeper"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  consumer:
+    image: mojopicon/kconsumer:0.0.2
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+    depends_on:
+      - "kafka"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+  producer:
+    image: mojopicon/kproducer:0.0.3
+    ports:
+      - "3000:3000"
+    depends_on:
+      - "kafka"
+    deploy:
+      mode: replicated
+      replicas: 3
