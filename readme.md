@@ -20,7 +20,7 @@ El __Dockerfile incluído__ es análogo al de *kproducer*.
 Se incluye un docker-compose.yml para orquestar el despliegue del stack.
 Se definen 4 servicios:
  - __zookeeper__: necesario para lanzar Apache Kafka. Se ha usado una imagen existente en *Docker Hub*.
- - __kafka__: el servicio de cola de mensajes. Se ha usado una imagen existente en *Docker Hub*. Se le pasa una variable de entorno CREATE_TOPICS con la que se indica que cree un topic de nombre __"global"__ al arranque del servicio, que usaran el productor y el consumidor para el intercambio de mensajes.
+ - __kafka__: el servicio de cola de mensajes. Se ha usado una imagen existente en *Docker Hub*. Se le pasa una variable de entorno CREATE_TOPICS con la que se le indica que cree un topic de nombre __"global"__ al arranque del servicio. Este topic lo usarán el productor y el consumidor para el intercambio de mensajes.
  - __consumer__: despliega el contenedor de *kconsumer* implementado. Mapea el puerto 3001 para el *webserver*, y el 3002 para la conexión *websocket* del front con el backend de kconsumer.
  - __producer__: despliega el contenedor de *kproducer* implementado. El puerto para el *webserver* es el 3000.
 
@@ -34,7 +34,7 @@ $ docker-compose up -d
 $ docker-compose down
 ```
 # Despliegue en swarm:
-Se ha definido un __factor de replicación__ de 3 para el servicio *producer*. Si se despliega el stack en un *swarm* con __3 nodos worker__, se puede comprobar que el productor se lanza en cada uno de ellos, y la carga de las peticiones se reparte entre los 3.
+Se ha definido un __factor de replicación__ de 3 para el servicio *producer*. Si se despliega el stack en un *swarm* con __3 nodos worker__, se puede comprobar que el productor es lanzado en cada uno de ellos, y que la carga de las peticiones se reparte entre los 3.
 #### Arranque de los servicios (desde el nodo manager)
 ```sh
 $ docker stack deploy --compose-file docker-compose.yml kafkademo
@@ -48,10 +48,12 @@ $ docker stack services kafkademo
 $ docker stack rm kafkademo
 ```
 # Uso
-Abrir en el navegador la url http://<host>:3000 para el productor, y http://<host>:3001 para el consumidor.
-Usar el formulario del productor para enviar un mensaje. Se recibe como respuesta la fecha de envío, el ID del nodo que ha procesado la petición y el cuerpo del mensaje.
-En la ventana del consumidor debe aparecer esta misma información de forma gráfica.
-Si se arranca en *swarm*, cada envío puede ser procesado por un nodo diferente.
+1. Abrir en una pestaña del navegador la url http://\<host\>:3000 para el productor
+2. Abrir en otra pestaña la url http://\<host\>:3001 para el consumidor
+3. Usar el formulario del __productor__ para enviar un mensaje. Se reciben como respuesta: la fecha de envío, el ID del nodo que ha procesado la petición y el cuerpo del mensaje.
+4. En la ventana del consumidor debe aparecer esta misma información de forma gráfica.
+
+Si se arranca en modo *swarm*, el _ID del nodo_ podrá variar en función del *worker* que procese cada publicación.
 
 # Autor
 Carlos M. Marrero Pérez - 2019
